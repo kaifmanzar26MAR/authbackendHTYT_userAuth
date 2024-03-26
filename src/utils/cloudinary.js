@@ -20,8 +20,11 @@ const uploadOnCloudinary = async (localFilePath) => {
     });
 
     //file has been uploaded successfully
-    console.log("file uploded on cloudinary", response.url); // url means the path of the upladed file
+    // console.log("file uploded on cloudinary", response.url); // url means the path of the upladed file
 
+    //unlinking file form public/temp
+    console.log('processing files...');
+    fs.unlinkSync(localFilePath);
     return response;
   } catch (error) {
     fs.unlinkSync(localFilePath); // remeove the locally saved temprory file upload the opreation go faild

@@ -29,8 +29,16 @@ const registerUser = asyncHandler(async (req, res) => {
   //getting localpath of the files //check for images and avtars
   console.log(req.files);
   const avatarLocalPath = req.files?.avatar[0]?.path;
-  const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  let coverImageLocalPath;
 
+  if (
+    req.files &&
+    Array.isArray(req.files.coverImage) &&
+    req.files.coverImage.length > 0
+  ) {
+    coverImageLocalPath = req.files.coverImage[0].path;
+  }
   if (!avatarLocalPath) {
     throw new ApiError(500, "Not found Avatar");
   }
@@ -38,8 +46,11 @@ const registerUser = asyncHandler(async (req, res) => {
   //upload image and avatar in cloudinary
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
+  // let coverImage=null;
+  // if(coverImageLocalPath)
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
+  //  console.log("cv",coverImage)
   if (!avatar) {
     throw new ApiError(500, "Avtar not found");
   }
@@ -52,16 +63,16 @@ const registerUser = asyncHandler(async (req, res) => {
     fullname,
     password,
     avatar: avatar.url,
-    coverImage: coverImage.url || "",
+    coverImage: coverImage ? coverImage.url : "",
   });
 
   //removing password and refersh token from response
   const user = await User.findById(newUser._id).select(
-    "-password",
-    "-refreshToken"
+    "-password -refreshToken"
   );
 
   //check for user creation
+  console.log(user);
   if (!user) {
     throw new ApiError(
       500,
